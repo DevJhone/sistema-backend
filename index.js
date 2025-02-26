@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
 const jwt = require("jsonwebtoken");
+require("dotenv").config(); // 🔹 Carrega variáveis do `.env`
 
 // 🔹 Importação de Rotas
 const produtoresRoutes = require("./routes/produtores");
@@ -11,7 +12,7 @@ const estatisticasRoutes = require("./routes/estatisticas");
 const notificacoesRoutes = require("./routes/notificacoes");
 const usuariosRoutes = require("./routes/usuarios");
 const cursosRoutes = require("./routes/cursos");
-const almoxarifadoRoutes = require("./routes/almoxarifado"); // ✅ Adicionado Almoxarifado
+const almoxarifadoRoutes = require("./routes/almoxarifado"); // ✅ Almoxarifado incluído
 
 const app = express();
 
@@ -40,10 +41,10 @@ app.use("/api/agendamentos", authenticateToken, agendamentosRoutes);
 app.use("/api/estatisticas", authenticateToken, estatisticasRoutes);
 app.use("/api/notificacoes", authenticateToken, notificacoesRoutes);
 app.use("/api/cursos", authenticateToken, cursosRoutes);
-app.use("/api/almoxarifado", authenticateToken, almoxarifadoRoutes); // ✅ Adicionada Rota do Almoxarifado
+app.use("/api/almoxarifado", authenticateToken, almoxarifadoRoutes); // ✅ Almoxarifado incluído
 
 // 🟢 Rotas Públicas (Sem Autenticação)
-app.use("/api/usuarios", usuariosRoutes); // Usuários podem acessar login sem token
+app.use("/api/usuarios", usuariosRoutes); // ✅ Usuários podem acessar login sem token
 
 // 🟢 Servir Arquivos Estáticos (Uploads de Atendimentos)
 app.use("/uploads", express.static("uploads"));
@@ -55,18 +56,17 @@ app.use((err, req, res, next) => {
 });
 
 // 🔹 Verificar Conexão Antes de Iniciar o Servidor
-db.getConnection((err, connection) => {
+db.query("SELECT 1", (err) => {
     if (err) {
         console.error("❌ Erro ao conectar ao banco de dados:", err);
-        process.exit(1); // Encerra o servidor se a conexão falhar
+        console.log("❗ Verifique suas credenciais no Railway e tente novamente.");
     } else {
         console.log("✅ Conexão com MySQL estabelecida!");
-        connection.release(); // Libera a conexão
-
-        // 🟢 Iniciar o Servidor
-        const PORT = process.env.PORT || 5001;
-        app.listen(PORT, () => {
-            console.log(`✅ Servidor rodando em http://localhost:${PORT}`);
-        });
     }
+});
+
+// 🟢 Iniciar o Servidor
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
 });
